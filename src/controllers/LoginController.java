@@ -1,16 +1,14 @@
 package controllers;
 
 
-import interfaces.LoginWindow;
-import interfaces.MainWindow;
-import sun.applet.Main;
+import View.LoginWindow;
+import View.MainWindow;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Properties;
 
 public class LoginController implements ActionListener {

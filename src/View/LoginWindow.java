@@ -1,4 +1,4 @@
-package interfaces;
+package View;
 
 import controllers.DefLoginController;
 import controllers.LoginController;

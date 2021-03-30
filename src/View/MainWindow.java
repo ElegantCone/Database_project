@@ -1,4 +1,6 @@
-package interfaces;
+package View;
+
+import sql.SQLController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,12 +17,13 @@ public class MainWindow extends JFrame implements ActionListener {
 
     private Connection conn;
     private JFrame window;
+    private SQLController sqlController;
 
-    public MainWindow(Connection conn){
+    public MainWindow(Connection conn) throws SQLException {
         this.conn = conn;
-
+        window = new JFrame();
         initWindow();
-
+        sqlController = new SQLController(conn);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.addWindowListener(connClose());
         window.setBounds(250, 50, 800, 600);
@@ -65,7 +68,27 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private void initWindow(){
-        JPanel contentLeft = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JPanel contentRight = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel contents = new JPanel(new FlowLayout());
+
+        JButton changeTables = new JButton("Создать/удалить таблицы");
+        JButton showTable = new JButton("Вывести таблицу");
+        changeTables.setPreferredSize(new Dimension(200, 30));
+        changeTables.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ChangeTableDialog changeDialog = new ChangeTableDialog("Изменение таблиц", conn);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        JTable table = new JTable();
+        contents.add(changeTables);
+        contents.add(table);
+
+
+        window.getContentPane().add(contents);
     }
 }
