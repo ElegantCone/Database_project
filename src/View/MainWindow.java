@@ -18,6 +18,7 @@ public class MainWindow extends JFrame implements ActionListener {
     private Connection conn;
     private JFrame window;
     private SQLController sqlController;
+    private JPanel contents = new JPanel(new FlowLayout());
 
     public MainWindow(Connection conn) throws SQLException {
         this.conn = conn;
@@ -68,11 +69,18 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     private void initWindow(){
-        JPanel contents = new JPanel(new FlowLayout());
+        window.getContentPane().remove(contents);
+        contents = new JPanel(new FlowLayout());
 
         JButton changeTables = new JButton("Создать/удалить таблицы");
-        JButton showTable = new JButton("Вывести таблицу");
+        JButton showTable = new JButton("Вывести таблицы");
+        JButton setData = new JButton("Ввести данные в таблицы");
+        JButton closeApp = new JButton("Закрыть приложение");
+
         changeTables.setPreferredSize(new Dimension(200, 30));
+        showTable.setPreferredSize(new Dimension(200, 30));
+        setData.setPreferredSize(new Dimension(200, 30));
+        closeApp.setPreferredSize(new Dimension(200, 30));
         changeTables.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -84,11 +92,152 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         });
 
-        JTable table = new JTable();
+        showTable.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeToShow();
+            }
+        });
+
+        setData.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeToSetData();
+            }
+        });
+
+        closeApp.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                window.dispose();
+                try {
+                    conn.close();
+                    System.exit(0);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        contents.add(showTable);
         contents.add(changeTables);
-        contents.add(table);
+        contents.add(setData);
+        contents.add(closeApp);
 
 
         window.getContentPane().add(contents);
+        window.invalidate();
+        window.validate();
+        window.repaint();
+    }
+
+    public void changeToShow(){
+        window.remove(contents);
+        contents = new JPanel(new FlowLayout());
+        Box box = Box.createVerticalBox();
+        box.setSize(600, 200);
+        contents.setSize(600, 200);
+
+        JLabel mainLbl = new JLabel("Показать таблицу");
+        JButton showSubs = new JButton("Абоненты");
+        JButton showATE = new JButton("АТС");
+        JButton backBtn = new JButton("Вернуться назад");
+
+        mainLbl.setSize(new Dimension(200, 30));
+        showSubs.setSize(new Dimension(200, 30));
+        showATE.setSize(new Dimension(200, 30));
+        backBtn.setSize(new Dimension(700, 30));
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                initWindow();
+            }
+        });
+
+        showSubs.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ShowTableDialog dialog = new ShowTableDialog("subscribers", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        showATE.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ShowTableDialog dialog = new ShowTableDialog("ate", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        partsInit(box, mainLbl, showSubs, showATE, backBtn);
+    }
+
+    public void changeToSetData(){
+        window.remove(contents);
+        contents = new JPanel(new FlowLayout());
+        Box box = Box.createVerticalBox();
+        box.setSize(600, 200);
+        contents.setSize(600, 200);
+
+        JLabel mainLbl = new JLabel("Внести данные");
+        JButton setDataSubs = new JButton("Абоненты");
+        JButton setDataATE = new JButton("АТС");
+        JButton backBtn = new JButton("Вернуться назад");
+
+        mainLbl.setSize(new Dimension(200, 30));
+        setDataSubs.setSize(new Dimension(200, 30));
+        setDataATE.setSize(new Dimension(200, 30));
+        backBtn.setSize(new Dimension(700, 30));
+
+        backBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                initWindow();
+            }
+        });
+
+        setDataSubs.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    SetDataDialog dialog = new SetDataDialog("subscribers", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        setDataATE.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    SetDataDialog dialog = new SetDataDialog("ate", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        partsInit(box, mainLbl, setDataSubs, setDataATE, backBtn);
+    }
+
+    private void partsInit(Box box, JLabel mainLbl, JButton setDataSubs, JButton setDataATE, JButton backBtn) {
+        box.add(mainLbl);
+        box.add(setDataSubs);
+        box.add(setDataATE);
+        box.add(backBtn);
+        contents.add(box, BorderLayout.CENTER);
+
+        window.getContentPane().add(contents);
+        window.invalidate();
+        window.validate();
+        window.repaint();
     }
 }
