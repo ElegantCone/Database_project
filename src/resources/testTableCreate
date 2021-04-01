@@ -1,0 +1,213 @@
+CREATE TABLE ate
+(
+    id                   INTEGER NOT NULL ,
+    lines_count          INTEGER NULL ,
+    numbers_count        INTEGER NULL ,
+    cable_count          INTEGER NULL ,
+    id_ctn               INTEGER NOT NULL ,
+    type                 INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKate ON ate
+    (id   ASC,id_ctn   ASC);
+
+ALTER TABLE ate
+    ADD CONSTRAINT  XPKate PRIMARY KEY (id,id_ctn);
+
+CREATE TABLE connection_requests
+(
+    id                   INTEGER NOT NULL ,
+    id_sub               INTEGER NULL ,
+    techical_capabilities SMALLINT NULL ,
+    id_ate               INTEGER NULL ,
+    id_ctn               INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKconnection_requests ON connection_requests
+    (id   ASC);
+
+ALTER TABLE connection_requests
+    ADD CONSTRAINT  XPKconnection_requests PRIMARY KEY (id);
+
+CREATE TABLE payphones
+(
+    id                   INTEGER NOT NULL ,
+    address              LONG VARCHAR NULL ,
+    id_ate               INTEGER NULL ,
+    id_ctn               INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKpayphones ON payphones
+    (id   ASC);
+
+ALTER TABLE payphones
+    ADD CONSTRAINT  XPKpayphones PRIMARY KEY (id);
+
+CREATE TABLE ate_attrs
+(
+    id                   INTEGER NOT NULL ,
+    attribute            VARCHAR2(50) NULL
+);
+
+CREATE UNIQUE INDEX XPKate_attrs ON ate_attrs
+    (id   ASC);
+
+ALTER TABLE ate_attrs
+    ADD CONSTRAINT  XPKate_attrs PRIMARY KEY (id);
+
+CREATE TABLE ate_types
+(
+    id                   INTEGER NOT NULL ,
+    type                 VARCHAR2(50) NULL ,
+    attribute            INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKate_types ON ate_types
+    (id   ASC);
+
+ALTER TABLE ate_types
+    ADD CONSTRAINT  XPKate_types PRIMARY KEY (id);
+
+CREATE TABLE ctn
+(
+    id                   INTEGER NOT NULL ,
+    city                 VARCHAR2(255) NULL
+);
+
+CREATE UNIQUE INDEX XPKctn ON ctn
+    (id   ASC);
+
+ALTER TABLE ctn
+    ADD CONSTRAINT  XPKctn PRIMARY KEY (id);
+
+CREATE TABLE internal_network
+(
+    phone_number         INTEGER NOT NULL ,
+    network_number       INTEGER NULL ,
+    id_ate               INTEGER NULL ,
+    id_ctn               INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKinternal_network ON internal_network
+    (phone_number   ASC);
+
+ALTER TABLE internal_network
+    ADD CONSTRAINT  XPKinternal_network PRIMARY KEY (phone_number);
+
+CREATE TABLE payment_cheque
+(
+    payment_date         DATE NULL ,
+    id_sub               INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX XPKpayment_cheque ON payment_cheque
+    (id_sub   ASC);
+
+ALTER TABLE payment_cheque
+    ADD CONSTRAINT  XPKpayment_cheque PRIMARY KEY (id_sub);
+
+CREATE TABLE notifications
+(
+    id                   INTEGER NOT NULL ,
+    notification_date    DATE NULL ,
+    id_sub               INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKnotifications ON notifications
+    (id   ASC);
+
+ALTER TABLE notifications
+    ADD CONSTRAINT  XPKnotifications PRIMARY KEY (id);
+
+CREATE TABLE subs_privileges
+(
+    id                   INTEGER NOT NULL ,
+    privilege            VARCHAR2(50) NULL ,
+    reduction            NUMBER(4,2) NULL
+);
+
+CREATE UNIQUE INDEX XPKprivileges ON subs_privileges
+    (id   ASC);
+
+ALTER TABLE subs_privileges
+    ADD CONSTRAINT  XPKprivileges PRIMARY KEY (id);
+
+CREATE TABLE subscribers
+(
+    id                   INTEGER NOT NULL ,
+    surname              VARCHAR2(50) NULL ,
+    name                 VARCHAR2(50) NULL ,
+    patronymic           VARCHAR2(50) NULL ,
+    sex                  VARCHAR2(20) NULL ,
+    street               VARCHAR2(50) NULL ,
+    house_number         INTEGER NULL ,
+    apartment_number     INTEGER NULL ,
+    phone_type           VARCHAR2(50) NULL ,
+    phone_number         INTEGER NULL ,
+    intercity_calls      SMALLINT NULL ,
+    payment              INTEGER NULL ,
+    id_ate               INTEGER NULL ,
+    id_ctn               INTEGER NULL ,
+    privilege            INTEGER NULL
+);
+
+CREATE UNIQUE INDEX XPKsubscribers ON subscribers
+    (id   ASC);
+
+ALTER TABLE subscribers
+    ADD CONSTRAINT  XPKsubscribers PRIMARY KEY (id);
+
+CREATE TABLE intercity_calls
+(
+    call_time            INTEGER NULL ,
+    outgoing_call        INTEGER NOT NULL ,
+    incoming_call        INTEGER NOT NULL
+);
+
+CREATE UNIQUE INDEX XPKintercity_calls ON intercity_calls
+    (outgoing_call   ASC,incoming_call   ASC);
+
+ALTER TABLE intercity_calls
+    ADD CONSTRAINT  XPKintercity_calls PRIMARY KEY (outgoing_call,incoming_call);
+
+ALTER TABLE ate
+    ADD (CONSTRAINT R_5 FOREIGN KEY (id_ctn) REFERENCES ctn (id));
+
+ALTER TABLE ate
+    ADD (CONSTRAINT R_11 FOREIGN KEY (type) REFERENCES ate_types (id) ON DELETE SET NULL);
+
+ALTER TABLE connection_requests
+    ADD (CONSTRAINT R_7 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+
+ALTER TABLE payphones
+    ADD (CONSTRAINT R_8 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+
+ALTER TABLE ate_types
+    ADD (CONSTRAINT R_12 FOREIGN KEY (attribute) REFERENCES ate_attrs (id) ON DELETE SET NULL);
+
+ALTER TABLE internal_network
+    ADD (CONSTRAINT R_15 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+
+ALTER TABLE payment_cheque
+    ADD (CONSTRAINT R_19 FOREIGN KEY (id_sub) REFERENCES subscribers (id));
+
+ALTER TABLE notifications
+    ADD (CONSTRAINT R_20 FOREIGN KEY (id_sub) REFERENCES payment_cheque (id_sub) ON DELETE SET NULL);
+
+ALTER TABLE subscribers
+    ADD (CONSTRAINT R_13 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+
+ALTER TABLE subscribers
+    ADD (CONSTRAINT R_14 FOREIGN KEY (phone_number) REFERENCES internal_network (phone_number) ON DELETE SET NULL);
+
+ALTER TABLE subscribers
+    ADD (CONSTRAINT R_18 FOREIGN KEY (privilege) REFERENCES subs_privileges (id) ON DELETE SET NULL);
+
+ALTER TABLE intercity_calls
+    ADD (CONSTRAINT R_16 FOREIGN KEY (outgoing_call) REFERENCES subscribers (id));
+
+ALTER TABLE intercity_calls
+    ADD (CONSTRAINT R_17 FOREIGN KEY (incoming_call) REFERENCES subscribers (id));
+
+
+
