@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Vector;
 
 public class MainWindow extends JFrame implements ActionListener {
 
@@ -140,6 +141,7 @@ public class MainWindow extends JFrame implements ActionListener {
         JLabel mainLbl = new JLabel("Показать таблицу");
         JButton showSubs = new JButton("Абоненты");
         JButton showATE = new JButton("АТС");
+        JButton showCTN = new JButton("ГТС");
         JButton backBtn = new JButton("Вернуться назад");
 
         mainLbl.setSize(new Dimension(200, 30));
@@ -165,6 +167,17 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         });
 
+        showCTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    ShowTableDialog dialog = new ShowTableDialog("ctn", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
         showATE.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -176,7 +189,7 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         });
 
-        partsInit(box, mainLbl, showSubs, showATE, backBtn);
+        partsInit(box, mainLbl, showSubs, showATE, showCTN, backBtn);
     }
 
     public void changeToSetData(){
@@ -189,6 +202,7 @@ public class MainWindow extends JFrame implements ActionListener {
         JLabel mainLbl = new JLabel("Внести данные");
         JButton setDataSubs = new JButton("Абоненты");
         JButton setDataATE = new JButton("АТС");
+        JButton setDataCTN = new JButton("ГТС");
         JButton backBtn = new JButton("Вернуться назад");
 
         mainLbl.setSize(new Dimension(200, 30));
@@ -200,6 +214,17 @@ public class MainWindow extends JFrame implements ActionListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 initWindow();
+            }
+        });
+
+        setDataCTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    SetDataDialog dialog = new SetDataDialog("ctn", sqlController);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
 
@@ -225,13 +250,14 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         });
 
-        partsInit(box, mainLbl, setDataSubs, setDataATE, backBtn);
+        partsInit(box, mainLbl, setDataSubs, setDataATE,setDataCTN, backBtn);
     }
 
-    private void partsInit(Box box, JLabel mainLbl, JButton setDataSubs, JButton setDataATE, JButton backBtn) {
+    private void partsInit(Box box, JLabel mainLbl, JButton setDataSubs, JButton setDataATE,JButton setDataCTN, JButton backBtn) {
         box.add(mainLbl);
         box.add(setDataSubs);
         box.add(setDataATE);
+        box.add(setDataCTN);
         box.add(backBtn);
         contents.add(box, BorderLayout.CENTER);
 
@@ -240,4 +266,5 @@ public class MainWindow extends JFrame implements ActionListener {
         window.validate();
         window.repaint();
     }
+
 }

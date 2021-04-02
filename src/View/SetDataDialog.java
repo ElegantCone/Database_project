@@ -15,7 +15,7 @@ public class SetDataDialog extends JDialog {
     SetDataController controller;
     Vector<JTextField> fields = new Vector<>();
     Vector<JLabel> labels = new Vector<>();
-    JLabel errLabel = new JLabel(".");
+    JLabel errLabel = new JLabel("");
 
     //вводим данные в таблицу tit
     SetDataDialog(String tit, SQLController SQLcontroller) throws SQLException {
@@ -41,6 +41,7 @@ public class SetDataDialog extends JDialog {
                 controller.setLabelsFields(labels, fields, errLabel);
                 try {
                     controller.insertData(tit);
+                    errLabel.setText("Данные добавлены в таблицу");
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                     errLabel.setText(ex.getMessage());

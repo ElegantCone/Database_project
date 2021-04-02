@@ -42,7 +42,7 @@ public class SetDataController {
         for (int i = 0; i < data.size(); i++){
             String prevData = data.elementAt(i);
             if (dataTypes.get(i).equals("String") && !data.get(i).isEmpty()) {
-                newData.add(i, "\"" + prevData + "\"");
+                newData.add(i, "'" + prevData + "'");
                 newColNames.add(colNames.get(i));
             }
             else if (!data.get(i).isEmpty()){
