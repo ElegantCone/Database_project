@@ -1,6 +1,6 @@
 CREATE  TRIGGER  tD_ate AFTER DELETE ON ate for each row
-    
-
+    -- erwin Builtin Trigger
+-- DELETE trigger on ate
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
@@ -68,31 +68,52 @@ BEGIN
             connection_requests.id_ctn = :old.id_ctn;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tI_ate BEFORE INSERT ON ate for each row
-    
+    -- erwin Builtin Trigger
 -- INSERT trigger on ate
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
-    /* ate_types  ate on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="0001c5f6", PARENT_OWNER="", PARENT_TABLE="ate_types"
+    /* districts  ate on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="0002bc5f", PARENT_OWNER="", PARENT_TABLE="districts"
     CHILD_OWNER="", CHILD_TABLE="ate"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_11", FK_COLUMNS="type" */
+    FK_CONSTRAINT="R_33", FK_COLUMNS="district_id" */
     UPDATE ate
     SET
         /* %SetFK(ate,NULL) */
-        ate.type = NULL
+        ate.district_id = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM districts
+                WHERE
+                    /* %JoinFKPK(:%New,districts," = "," AND") */
+                        :new.district_id = districts.id
+            )
+        /* %JoinPKPK(ate,:%New," = "," AND") */
+      and ate.id = :new.id AND
+            ate.id_ctn = :new.id_ctn;
+
+    /* erwin Builtin Trigger */
+    /* ate_types  ate on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ate_types"
+    CHILD_OWNER="", CHILD_TABLE="ate"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_11", FK_COLUMNS="ate_type" */
+    UPDATE ate
+    SET
+        /* %SetFK(ate,NULL) */
+        ate.ate_type = NULL
     WHERE
         NOT EXISTS (
                 SELECT * FROM ate_types
                 WHERE
                     /* %JoinFKPK(:%New,ate_types," = "," AND") */
-                        :new.type = ate_types.id
+                        :new.ate_type = ate_types.id
             )
         /* %JoinPKPK(ate,:%New," = "," AND") */
       and ate.id = :new.id AND
@@ -122,17 +143,17 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_ate AFTER UPDATE ON ate for each row
-
+    -- erwin Builtin Trigger
 -- UPDATE trigger on ate
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* ate  internal_network on parent update set null */
-    /* ERWIN_RELATION:CHECKSUM="000634f5", PARENT_OWNER="", PARENT_TABLE="ate"
+    /* ERWIN_RELATION:CHECKSUM="00074ba3", PARENT_OWNER="", PARENT_TABLE="ate"
       CHILD_OWNER="", CHILD_TABLE="internal_network"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
       FK_CONSTRAINT="R_15", FK_COLUMNS="id_ate""id_ctn" */
@@ -216,19 +237,42 @@ BEGIN
     END IF;
 
     /* erwin Builtin Trigger */
+    /* districts  ate on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="districts"
+      CHILD_OWNER="", CHILD_TABLE="ate"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_33", FK_COLUMNS="district_id" */
+    SELECT count(*) INTO NUMROWS
+    FROM districts
+    WHERE
+        /* %JoinFKPK(:%New,districts," = "," AND") */
+            :new.district_id = districts.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.district_id IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update ate because districts does not exist.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
     /* ate_types  ate on child update no action */
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ate_types"
       CHILD_OWNER="", CHILD_TABLE="ate"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_11", FK_COLUMNS="type" */
+      FK_CONSTRAINT="R_11", FK_COLUMNS="ate_type" */
     SELECT count(*) INTO NUMROWS
     FROM ate_types
     WHERE
         /* %JoinFKPK(:%New,ate_types," = "," AND") */
-            :new.type = ate_types.id;
+            :new.ate_type = ate_types.id;
     IF (
         /* %NotnullFK(:%New," IS NOT NULL AND") */
-                :new.type IS NOT NULL AND
+                :new.ate_type IS NOT NULL AND
                 NUMROWS = 0
         )
     THEN
@@ -262,81 +306,13 @@ BEGIN
     END IF;
 
 
-
-END;
-/
-
-
-CREATE  TRIGGER tI_connection_requests BEFORE INSERT ON connection_requests for each row
-
--- INSERT trigger on connection_requests
-DECLARE NUMROWS INTEGER;
-BEGIN
-    /* erwin Builtin Trigger */
-    /* ate  connection_requests on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="00011d7f", PARENT_OWNER="", PARENT_TABLE="ate"
-    CHILD_OWNER="", CHILD_TABLE="connection_requests"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_7", FK_COLUMNS="id_ate""id_ctn" */
-    UPDATE connection_requests
-    SET
-        /* %SetFK(connection_requests,NULL) */
-        connection_requests.id_ate = NULL,
-        connection_requests.id_ctn = NULL
-    WHERE
-        NOT EXISTS (
-                SELECT * FROM ate
-                WHERE
-                    /* %JoinFKPK(:%New,ate," = "," AND") */
-                        :new.id_ate = ate.id AND
-                        :new.id_ctn = ate.id_ctn
-            )
-        /* %JoinPKPK(connection_requests,:%New," = "," AND") */
-      and connection_requests.id = :new.id;
-
-
-
-END;
-/
-
-CREATE  TRIGGER tU_connection_requests AFTER UPDATE ON connection_requests for each row
-
--- UPDATE trigger on connection_requests
-DECLARE NUMROWS INTEGER;
-BEGIN
-    /* erwin Builtin Trigger */
-    /* ate  connection_requests on child update no action */
-    /* ERWIN_RELATION:CHECKSUM="00011639", PARENT_OWNER="", PARENT_TABLE="ate"
-      CHILD_OWNER="", CHILD_TABLE="connection_requests"
-      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_7", FK_COLUMNS="id_ate""id_ctn" */
-    SELECT count(*) INTO NUMROWS
-    FROM ate
-    WHERE
-        /* %JoinFKPK(:%New,ate," = "," AND") */
-            :new.id_ate = ate.id AND
-            :new.id_ctn = ate.id_ctn;
-    IF (
-        /* %NotnullFK(:%New," IS NOT NULL AND") */
-                :new.id_ate IS NOT NULL AND
-                :new.id_ctn IS NOT NULL AND
-                NUMROWS = 0
-        )
-    THEN
-        raise_application_error(
-                -20007,
-                'Cannot update connection_requests because ate does not exist.'
-            );
-    END IF;
-
-
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER tI_payphones BEFORE INSERT ON payphones for each row
-
+    -- erwin Builtin Trigger
 -- INSERT trigger on payphones
 DECLARE NUMROWS INTEGER;
 BEGIN
@@ -363,12 +339,12 @@ BEGIN
       and payphones.id = :new.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_payphones AFTER UPDATE ON payphones for each row
-
+    -- erwin Builtin Trigger
 -- UPDATE trigger on payphones
 DECLARE NUMROWS INTEGER;
 BEGIN
@@ -398,13 +374,14 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER  tD_ate_attrs AFTER DELETE ON ate_attrs for each row
-
+    -- erwin Builtin Trigger
+-- DELETE trigger on ate_attrs
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
@@ -422,12 +399,12 @@ BEGIN
             ate_types.attribute = :old.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_ate_attrs AFTER UPDATE ON ate_attrs for each row
-
+    -- erwin Builtin Trigger
 -- UPDATE trigger on ate_attrs
 DECLARE NUMROWS INTEGER;
 BEGIN
@@ -450,38 +427,38 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER  tD_ate_types AFTER DELETE ON ate_types for each row
-
+    -- erwin Builtin Trigger
 -- DELETE trigger on ate_types
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
     /* ate_types  ate on parent delete set null */
-    /* ERWIN_RELATION:CHECKSUM="00009af6", PARENT_OWNER="", PARENT_TABLE="ate_types"
+    /* ERWIN_RELATION:CHECKSUM="0000a0bd", PARENT_OWNER="", PARENT_TABLE="ate_types"
     CHILD_OWNER="", CHILD_TABLE="ate"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_11", FK_COLUMNS="type" */
+    FK_CONSTRAINT="R_11", FK_COLUMNS="ate_type" */
     UPDATE ate
     SET
         /* %SetFK(ate,NULL) */
-        ate.type = NULL
+        ate.ate_type = NULL
     WHERE
         /* %JoinFKPK(ate,:%Old," = "," AND") */
-            ate.type = :old.id;
+            ate.ate_type = :old.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tI_ate_types BEFORE INSERT ON ate_types for each row
-
-
+    -- erwin Builtin Trigger
+-- INSERT trigger on ate_types
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
@@ -505,20 +482,20 @@ BEGIN
       and ate_types.id = :new.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_ate_types AFTER UPDATE ON ate_types for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on ate_types
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* ate_types  ate on parent update set null */
-    /* ERWIN_RELATION:CHECKSUM="0001d64f", PARENT_OWNER="", PARENT_TABLE="ate_types"
+    /* ERWIN_RELATION:CHECKSUM="0001c0e8", PARENT_OWNER="", PARENT_TABLE="ate_types"
       CHILD_OWNER="", CHILD_TABLE="ate"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_11", FK_COLUMNS="type" */
+      FK_CONSTRAINT="R_11", FK_COLUMNS="ate_type" */
     IF
         /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
             :old.id <> :new.id
@@ -526,10 +503,10 @@ BEGIN
         UPDATE ate
         SET
             /* %SetFK(ate,NULL) */
-            ate.type = NULL
+            ate.ate_type = NULL
         WHERE
             /* %JoinFKPK(ate,:%Old," = ",",") */
-                ate.type = :old.id;
+                ate.ate_type = :old.id;
     END IF;
 
     /* erwin Builtin Trigger */
@@ -556,19 +533,33 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER  tD_ctn AFTER DELETE ON ctn for each row
-
-
+    -- erwin Builtin Trigger
+-- DELETE trigger on ctn
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
+    /* ctn  districts on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="000179f9", PARENT_OWNER="", PARENT_TABLE="ctn"
+    CHILD_OWNER="", CHILD_TABLE="districts"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_34", FK_COLUMNS="ctn_id" */
+    UPDATE districts
+    SET
+        /* %SetFK(districts,NULL) */
+        districts.ctn_id = NULL
+    WHERE
+        /* %JoinFKPK(districts,:%Old," = "," AND") */
+            districts.ctn_id = :old.id;
+
+    /* erwin Builtin Trigger */
     /* ctn  ate on parent delete restrict */
-    /* ERWIN_RELATION:CHECKSUM="0000c140", PARENT_OWNER="", PARENT_TABLE="ctn"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ctn"
     CHILD_OWNER="", CHILD_TABLE="ate"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
     FK_CONSTRAINT="R_5", FK_COLUMNS="id_ctn" */
@@ -586,18 +577,36 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_ctn AFTER UPDATE ON ctn for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on ctn
 DECLARE NUMROWS INTEGER;
 BEGIN
+    /* ctn  districts on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="0001aac9", PARENT_OWNER="", PARENT_TABLE="ctn"
+      CHILD_OWNER="", CHILD_TABLE="districts"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_34", FK_COLUMNS="ctn_id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE districts
+        SET
+            /* %SetFK(districts,NULL) */
+            districts.ctn_id = NULL
+        WHERE
+            /* %JoinFKPK(districts,:%Old," = ",",") */
+                districts.ctn_id = :old.id;
+    END IF;
+
     /* erwin Builtin Trigger */
     /* ctn  ate on parent update restrict */
-    /* ERWIN_RELATION:CHECKSUM="0000d726", PARENT_OWNER="", PARENT_TABLE="ctn"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ctn"
       CHILD_OWNER="", CHILD_TABLE="ate"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
       FK_CONSTRAINT="R_5", FK_COLUMNS="id_ctn" */
@@ -620,43 +629,666 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
-CREATE  TRIGGER  tD_internal_network AFTER DELETE ON internal_network for each row
-
-
+CREATE  TRIGGER  tD_districts AFTER DELETE ON districts for each row
+    -- erwin Builtin Trigger
+-- DELETE trigger on districts
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
-    /* internal_network  subscribers on parent delete set null */
-    /* ERWIN_RELATION:CHECKSUM="0000c0fd", PARENT_OWNER="", PARENT_TABLE="internal_network"
+    /* districts  ate on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="0000a0e9", PARENT_OWNER="", PARENT_TABLE="districts"
+    CHILD_OWNER="", CHILD_TABLE="ate"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_33", FK_COLUMNS="district_id" */
+    UPDATE ate
+    SET
+        /* %SetFK(ate,NULL) */
+        ate.district_id = NULL
+    WHERE
+        /* %JoinFKPK(ate,:%Old," = "," AND") */
+            ate.district_id = :old.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tI_districts BEFORE INSERT ON districts for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on districts
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* ctn  districts on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="0000cb47", PARENT_OWNER="", PARENT_TABLE="ctn"
+    CHILD_OWNER="", CHILD_TABLE="districts"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_34", FK_COLUMNS="ctn_id" */
+    UPDATE districts
+    SET
+        /* %SetFK(districts,NULL) */
+        districts.ctn_id = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM ctn
+                WHERE
+                    /* %JoinFKPK(:%New,ctn," = "," AND") */
+                        :new.ctn_id = ctn.id
+            )
+        /* %JoinPKPK(districts,:%New," = "," AND") */
+      and districts.id = :new.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_districts AFTER UPDATE ON districts for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on districts
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* districts  ate on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="0001acd6", PARENT_OWNER="", PARENT_TABLE="districts"
+      CHILD_OWNER="", CHILD_TABLE="ate"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_33", FK_COLUMNS="district_id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE ate
+        SET
+            /* %SetFK(ate,NULL) */
+            ate.district_id = NULL
+        WHERE
+            /* %JoinFKPK(ate,:%Old," = ",",") */
+                ate.district_id = :old.id;
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* ctn  districts on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ctn"
+      CHILD_OWNER="", CHILD_TABLE="districts"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_34", FK_COLUMNS="ctn_id" */
+    SELECT count(*) INTO NUMROWS
+    FROM ctn
+    WHERE
+        /* %JoinFKPK(:%New,ctn," = "," AND") */
+            :new.ctn_id = ctn.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.ctn_id IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update districts because ctn does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER  tD_payment_cheque AFTER DELETE ON payment_cheque for each row
+    -- erwin Builtin Trigger
+-- DELETE trigger on payment_cheque
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* payment_cheque  notifications on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="0000b619", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
+    CHILD_OWNER="", CHILD_TABLE="notifications"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_20", FK_COLUMNS="id" */
+    UPDATE notifications
+    SET
+        /* %SetFK(notifications,NULL) */
+        notifications.id = NULL
+    WHERE
+        /* %JoinFKPK(notifications,:%Old," = "," AND") */
+            notifications.id = :old.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tI_payment_cheque BEFORE INSERT ON payment_cheque for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on payment_cheque
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* subscribers  payment_cheque on child insert restrict */
+    /* ERWIN_RELATION:CHECKSUM="0000e77a", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    CHILD_OWNER="", CHILD_TABLE="payment_cheque"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_19", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM subscribers
+    WHERE
+        /* %JoinFKPK(:%New,subscribers," = "," AND") */
+            :new.id = subscribers.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+
+            NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20002,
+                'Cannot insert payment_cheque because subscribers does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_payment_cheque AFTER UPDATE ON payment_cheque for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on payment_cheque
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* payment_cheque  notifications on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="0001e3ff", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
+      CHILD_OWNER="", CHILD_TABLE="notifications"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_20", FK_COLUMNS="id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE notifications
+        SET
+            /* %SetFK(notifications,NULL) */
+            notifications.id = NULL
+        WHERE
+            /* %JoinFKPK(notifications,:%Old," = ",",") */
+                notifications.id = :old.id;
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* subscribers  payment_cheque on child update restrict */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
+      CHILD_OWNER="", CHILD_TABLE="payment_cheque"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_19", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM subscribers
+    WHERE
+        /* %JoinFKPK(:%New,subscribers," = "," AND") */
+            :new.id = subscribers.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+
+            NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update payment_cheque because subscribers does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER tI_notifications BEFORE INSERT ON notifications for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on notifications
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* payment_cheque  notifications on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="0000f22c", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
+    CHILD_OWNER="", CHILD_TABLE="notifications"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_20", FK_COLUMNS="id" */
+    UPDATE notifications
+    SET
+        /* %SetFK(notifications,NULL) */
+        notifications.id = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM payment_cheque
+                WHERE
+                    /* %JoinFKPK(:%New,payment_cheque," = "," AND") */
+                        :new.id = payment_cheque.id
+            )
+        /* %JoinPKPK(notifications,:%New," = "," AND") */
+      and notifications.id = :new.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_notifications AFTER UPDATE ON notifications for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on notifications
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* payment_cheque  notifications on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="0000fecd", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
+      CHILD_OWNER="", CHILD_TABLE="notifications"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_20", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM payment_cheque
+    WHERE
+        /* %JoinFKPK(:%New,payment_cheque," = "," AND") */
+            :new.id = payment_cheque.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.id IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update notifications because payment_cheque does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER  tD_people AFTER DELETE ON people for each row
+    -- erwin Builtin Trigger
+-- DELETE trigger on people
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* people  subscribers on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="00019be9", PARENT_OWNER="", PARENT_TABLE="people"
     CHILD_OWNER="", CHILD_TABLE="subscribers"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_14", FK_COLUMNS="phone_number" */
+    FK_CONSTRAINT="R_23", FK_COLUMNS="id_person" */
     UPDATE subscribers
     SET
         /* %SetFK(subscribers,NULL) */
-        subscribers.phone_number = NULL
+        subscribers.id_person = NULL
     WHERE
         /* %JoinFKPK(subscribers,:%Old," = "," AND") */
-            subscribers.phone_number = :old.phone_number;
+            subscribers.id_person = :old.id;
+
+    /* erwin Builtin Trigger */
+    /* people  connection_requests on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="people"
+    CHILD_OWNER="", CHILD_TABLE="connection_requests"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_16", FK_COLUMNS="id_person" */
+    UPDATE connection_requests
+    SET
+        /* %SetFK(connection_requests,NULL) */
+        connection_requests.id_person = NULL
+    WHERE
+        /* %JoinFKPK(connection_requests,:%Old," = "," AND") */
+            connection_requests.id_person = :old.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
-CREATE  TRIGGER tI_internal_network BEFORE INSERT ON internal_network for each row
+CREATE  TRIGGER tU_people AFTER UPDATE ON people for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on people
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* people  subscribers on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="0001dc73", PARENT_OWNER="", PARENT_TABLE="people"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_23", FK_COLUMNS="id_person" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE subscribers
+        SET
+            /* %SetFK(subscribers,NULL) */
+            subscribers.id_person = NULL
+        WHERE
+            /* %JoinFKPK(subscribers,:%Old," = ",",") */
+                subscribers.id_person = :old.id;
+    END IF;
+
+    /* people  connection_requests on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="people"
+      CHILD_OWNER="", CHILD_TABLE="connection_requests"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_16", FK_COLUMNS="id_person" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE connection_requests
+        SET
+            /* %SetFK(connection_requests,NULL) */
+            connection_requests.id_person = NULL
+        WHERE
+            /* %JoinFKPK(connection_requests,:%Old," = ",",") */
+                connection_requests.id_person = :old.id;
+    END IF;
 
 
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER tI_connection_requests BEFORE INSERT ON connection_requests for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on connection_requests
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
+    /* people  connection_requests on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00022f1c", PARENT_OWNER="", PARENT_TABLE="people"
+    CHILD_OWNER="", CHILD_TABLE="connection_requests"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_16", FK_COLUMNS="id_person" */
+    UPDATE connection_requests
+    SET
+        /* %SetFK(connection_requests,NULL) */
+        connection_requests.id_person = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM people
+                WHERE
+                    /* %JoinFKPK(:%New,people," = "," AND") */
+                        :new.id_person = people.id
+            )
+        /* %JoinPKPK(connection_requests,:%New," = "," AND") */
+      and connection_requests.id = :new.id;
+
+    /* erwin Builtin Trigger */
+    /* ate  connection_requests on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ate"
+    CHILD_OWNER="", CHILD_TABLE="connection_requests"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_7", FK_COLUMNS="id_ate""id_ctn" */
+    UPDATE connection_requests
+    SET
+        /* %SetFK(connection_requests,NULL) */
+        connection_requests.id_ate = NULL,
+        connection_requests.id_ctn = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM ate
+                WHERE
+                    /* %JoinFKPK(:%New,ate," = "," AND") */
+                        :new.id_ate = ate.id AND
+                        :new.id_ctn = ate.id_ctn
+            )
+        /* %JoinPKPK(connection_requests,:%New," = "," AND") */
+      and connection_requests.id = :new.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_connection_requests AFTER UPDATE ON connection_requests for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on connection_requests
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* people  connection_requests on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="0002139d", PARENT_OWNER="", PARENT_TABLE="people"
+      CHILD_OWNER="", CHILD_TABLE="connection_requests"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_16", FK_COLUMNS="id_person" */
+    SELECT count(*) INTO NUMROWS
+    FROM people
+    WHERE
+        /* %JoinFKPK(:%New,people," = "," AND") */
+            :new.id_person = people.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.id_person IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update connection_requests because people does not exist.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* ate  connection_requests on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ate"
+      CHILD_OWNER="", CHILD_TABLE="connection_requests"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_7", FK_COLUMNS="id_ate""id_ctn" */
+    SELECT count(*) INTO NUMROWS
+    FROM ate
+    WHERE
+        /* %JoinFKPK(:%New,ate," = "," AND") */
+            :new.id_ate = ate.id AND
+            :new.id_ctn = ate.id_ctn;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.id_ate IS NOT NULL AND
+                :new.id_ctn IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update connection_requests because ate does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER  tD_phone_numbers AFTER DELETE ON phone_numbers for each row
+    -- erwin Builtin Trigger
+-- DELETE trigger on phone_numbers
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* phone_numbers  internal_network on parent delete restrict */
+    /* ERWIN_RELATION:CHECKSUM="0001bf80", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+    CHILD_OWNER="", CHILD_TABLE="internal_network"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_26", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM internal_network
+    WHERE
+        /*  %JoinFKPK(internal_network,:%Old," = "," AND") */
+            internal_network.id = :old.id;
+    IF (NUMROWS > 0)
+    THEN
+        raise_application_error(
+                -20001,
+                'Cannot delete phone_numbers because internal_network exists.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* phone_numbers  subscribers on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+    CHILD_OWNER="", CHILD_TABLE="subscribers"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_24", FK_COLUMNS="phone_num_id" */
+    UPDATE subscribers
+    SET
+        /* %SetFK(subscribers,NULL) */
+        subscribers.phone_num_id = NULL
+    WHERE
+        /* %JoinFKPK(subscribers,:%Old," = "," AND") */
+            subscribers.phone_num_id = :old.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tI_phone_numbers BEFORE INSERT ON phone_numbers for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on phone_numbers
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* phone_types  phone_numbers on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="0000edf4", PARENT_OWNER="", PARENT_TABLE="phone_types"
+    CHILD_OWNER="", CHILD_TABLE="phone_numbers"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_31", FK_COLUMNS="type" */
+    UPDATE phone_numbers
+    SET
+        /* %SetFK(phone_numbers,NULL) */
+        phone_numbers.type = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM phone_types
+                WHERE
+                    /* %JoinFKPK(:%New,phone_types," = "," AND") */
+                        :new.type = phone_types.id
+            )
+        /* %JoinPKPK(phone_numbers,:%New," = "," AND") */
+      and phone_numbers.id = :new.id;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+CREATE  TRIGGER tU_phone_numbers AFTER UPDATE ON phone_numbers for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on phone_numbers
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* phone_numbers  internal_network on parent update restrict */
+    /* ERWIN_RELATION:CHECKSUM="0002f8f2", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+      CHILD_OWNER="", CHILD_TABLE="internal_network"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_26", FK_COLUMNS="id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        SELECT count(*) INTO NUMROWS
+        FROM internal_network
+        WHERE
+            /*  %JoinFKPK(internal_network,:%Old," = "," AND") */
+                internal_network.id = :old.id;
+        IF (NUMROWS > 0)
+        THEN
+            raise_application_error(
+                    -20005,
+                    'Cannot update phone_numbers because internal_network exists.'
+                );
+        END IF;
+    END IF;
+
+    /* phone_numbers  subscribers on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_24", FK_COLUMNS="phone_num_id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        UPDATE subscribers
+        SET
+            /* %SetFK(subscribers,NULL) */
+            subscribers.phone_num_id = NULL
+        WHERE
+            /* %JoinFKPK(subscribers,:%Old," = ",",") */
+                subscribers.phone_num_id = :old.id;
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* phone_types  phone_numbers on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_types"
+      CHILD_OWNER="", CHILD_TABLE="phone_numbers"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_31", FK_COLUMNS="type" */
+    SELECT count(*) INTO NUMROWS
+    FROM phone_types
+    WHERE
+        /* %JoinFKPK(:%New,phone_types," = "," AND") */
+            :new.type = phone_types.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.type IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update phone_numbers because phone_types does not exist.'
+            );
+    END IF;
+
+
+-- erwin Builtin Trigger
+END;
+/
+
+
+CREATE  TRIGGER tI_internal_network BEFORE INSERT ON internal_network for each row
+    -- erwin Builtin Trigger
+-- INSERT trigger on internal_network
+DECLARE NUMROWS INTEGER;
+BEGIN
+    /* erwin Builtin Trigger */
+    /* phone_numbers  internal_network on child insert restrict */
+    /* ERWIN_RELATION:CHECKSUM="000220ef", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+    CHILD_OWNER="", CHILD_TABLE="internal_network"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_26", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM phone_numbers
+    WHERE
+        /* %JoinFKPK(:%New,phone_numbers," = "," AND") */
+            :new.id = phone_numbers.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+
+            NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20002,
+                'Cannot insert internal_network because phone_numbers does not exist.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
     /* ate  internal_network on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="00011ce1", PARENT_OWNER="", PARENT_TABLE="ate"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="ate"
     CHILD_OWNER="", CHILD_TABLE="internal_network"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
     FK_CONSTRAINT="R_15", FK_COLUMNS="id_ate""id_ctn" */
@@ -674,34 +1306,39 @@ BEGIN
                         :new.id_ctn = ate.id_ctn
             )
         /* %JoinPKPK(internal_network,:%New," = "," AND") */
-      and internal_network.phone_number = :new.phone_number;
+      and internal_network.id = :new.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_internal_network AFTER UPDATE ON internal_network for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on internal_network
 DECLARE NUMROWS INTEGER;
 BEGIN
-    /* internal_network  subscribers on parent update set null */
-    /* ERWIN_RELATION:CHECKSUM="00021516", PARENT_OWNER="", PARENT_TABLE="internal_network"
-      CHILD_OWNER="", CHILD_TABLE="subscribers"
+    /* erwin Builtin Trigger */
+    /* phone_numbers  internal_network on child update restrict */
+    /* ERWIN_RELATION:CHECKSUM="00021c2a", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+      CHILD_OWNER="", CHILD_TABLE="internal_network"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_14", FK_COLUMNS="phone_number" */
-    IF
-        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
-            :old.phone_number <> :new.phone_number
+      FK_CONSTRAINT="R_26", FK_COLUMNS="id" */
+    SELECT count(*) INTO NUMROWS
+    FROM phone_numbers
+    WHERE
+        /* %JoinFKPK(:%New,phone_numbers," = "," AND") */
+            :new.id = phone_numbers.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+
+            NUMROWS = 0
+        )
     THEN
-        UPDATE subscribers
-        SET
-            /* %SetFK(subscribers,NULL) */
-            subscribers.phone_number = NULL
-        WHERE
-            /* %JoinFKPK(subscribers,:%Old," = ",",") */
-                subscribers.phone_number = :old.phone_number;
+        raise_application_error(
+                -20007,
+                'Cannot update internal_network because phone_numbers does not exist.'
+            );
     END IF;
 
     /* erwin Builtin Trigger */
@@ -730,192 +1367,104 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
-CREATE  TRIGGER  tD_payment_cheque AFTER DELETE ON payment_cheque for each row
-
-
+CREATE  TRIGGER  tD_phone_types AFTER DELETE ON phone_types for each row
+    -- erwin Builtin Trigger
+-- DELETE trigger on phone_types
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
-    /* payment_cheque  notifications on parent delete set null */
-    /* ERWIN_RELATION:CHECKSUM="0000be88", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
-    CHILD_OWNER="", CHILD_TABLE="notifications"
+    /* phone_types  phone_numbers on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="00018972", PARENT_OWNER="", PARENT_TABLE="phone_types"
+    CHILD_OWNER="", CHILD_TABLE="phone_numbers"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_20", FK_COLUMNS="id_sub" */
-    UPDATE notifications
+    FK_CONSTRAINT="R_31", FK_COLUMNS="type" */
+    UPDATE phone_numbers
     SET
-        /* %SetFK(notifications,NULL) */
-        notifications.id_sub = NULL
+        /* %SetFK(phone_numbers,NULL) */
+        phone_numbers.type = NULL
     WHERE
-        /* %JoinFKPK(notifications,:%Old," = "," AND") */
-            notifications.id_sub = :old.id_sub;
+        /* %JoinFKPK(phone_numbers,:%Old," = "," AND") */
+            phone_numbers.type = :old.id;
 
-
-
-END;
-/
-
-CREATE  TRIGGER tI_payment_cheque BEFORE INSERT ON payment_cheque for each row
-
-
-DECLARE NUMROWS INTEGER;
-BEGIN
     /* erwin Builtin Trigger */
-    /* subscribers  payment_cheque on child insert restrict */
-    /* ERWIN_RELATION:CHECKSUM="0000ef7a", PARENT_OWNER="", PARENT_TABLE="subscribers"
-    CHILD_OWNER="", CHILD_TABLE="payment_cheque"
+    /* phone_types  subscribers on parent delete set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_types"
+    CHILD_OWNER="", CHILD_TABLE="subscribers"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_19", FK_COLUMNS="id_sub" */
-    SELECT count(*) INTO NUMROWS
-    FROM subscribers
+    FK_CONSTRAINT="R_28", FK_COLUMNS="phone_type" */
+    UPDATE subscribers
+    SET
+        /* %SetFK(subscribers,NULL) */
+        subscribers.phone_type = NULL
     WHERE
-        /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.id_sub = subscribers.id;
-    IF (
-        /* %NotnullFK(:%New," IS NOT NULL AND") */
-
-            NUMROWS = 0
-        )
-    THEN
-        raise_application_error(
-                -20002,
-                'Cannot insert payment_cheque because subscribers does not exist.'
-            );
-    END IF;
+        /* %JoinFKPK(subscribers,:%Old," = "," AND") */
+            subscribers.phone_type = :old.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
-CREATE  TRIGGER tU_payment_cheque AFTER UPDATE ON payment_cheque for each row
-
-
+CREATE  TRIGGER tU_phone_types AFTER UPDATE ON phone_types for each row
+    -- erwin Builtin Trigger
+-- UPDATE trigger on phone_types
 DECLARE NUMROWS INTEGER;
 BEGIN
-    /* payment_cheque  notifications on parent update set null */
-    /* ERWIN_RELATION:CHECKSUM="0001e8a1", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
-      CHILD_OWNER="", CHILD_TABLE="notifications"
+    /* phone_types  phone_numbers on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="0001d201", PARENT_OWNER="", PARENT_TABLE="phone_types"
+      CHILD_OWNER="", CHILD_TABLE="phone_numbers"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_20", FK_COLUMNS="id_sub" */
+      FK_CONSTRAINT="R_31", FK_COLUMNS="type" */
     IF
         /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
-            :old.id_sub <> :new.id_sub
+            :old.id <> :new.id
     THEN
-        UPDATE notifications
+        UPDATE phone_numbers
         SET
-            /* %SetFK(notifications,NULL) */
-            notifications.id_sub = NULL
+            /* %SetFK(phone_numbers,NULL) */
+            phone_numbers.type = NULL
         WHERE
-            /* %JoinFKPK(notifications,:%Old," = ",",") */
-                notifications.id_sub = :old.id_sub;
+            /* %JoinFKPK(phone_numbers,:%Old," = ",",") */
+                phone_numbers.type = :old.id;
     END IF;
 
-    /* erwin Builtin Trigger */
-    /* subscribers  payment_cheque on child update restrict */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
-      CHILD_OWNER="", CHILD_TABLE="payment_cheque"
+    /* phone_types  subscribers on parent update set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_types"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_19", FK_COLUMNS="id_sub" */
-    SELECT count(*) INTO NUMROWS
-    FROM subscribers
-    WHERE
-        /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.id_sub = subscribers.id;
-    IF (
-        /* %NotnullFK(:%New," IS NOT NULL AND") */
-
-            NUMROWS = 0
-        )
+      FK_CONSTRAINT="R_28", FK_COLUMNS="phone_type" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
     THEN
-        raise_application_error(
-                -20007,
-                'Cannot update payment_cheque because subscribers does not exist.'
-            );
+        UPDATE subscribers
+        SET
+            /* %SetFK(subscribers,NULL) */
+            subscribers.phone_type = NULL
+        WHERE
+            /* %JoinFKPK(subscribers,:%Old," = ",",") */
+                subscribers.phone_type = :old.id;
     END IF;
 
 
-
-END;
-/
-
-
-CREATE  TRIGGER tI_notifications BEFORE INSERT ON notifications for each row
-
-
-DECLARE NUMROWS INTEGER;
-BEGIN
-    /* erwin Builtin Trigger */
-    /* payment_cheque  notifications on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="0000f894", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
-    CHILD_OWNER="", CHILD_TABLE="notifications"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_20", FK_COLUMNS="id_sub" */
-    UPDATE notifications
-    SET
-        /* %SetFK(notifications,NULL) */
-        notifications.id_sub = NULL
-    WHERE
-        NOT EXISTS (
-                SELECT * FROM payment_cheque
-                WHERE
-                    /* %JoinFKPK(:%New,payment_cheque," = "," AND") */
-                        :new.id_sub = payment_cheque.id_sub
-            )
-        /* %JoinPKPK(notifications,:%New," = "," AND") */
-      and notifications.id = :new.id;
-
-
-
-END;
-/
-
-CREATE  TRIGGER tU_notifications AFTER UPDATE ON notifications for each row
-
-
-DECLARE NUMROWS INTEGER;
-BEGIN
-    /* erwin Builtin Trigger */
-    /* payment_cheque  notifications on child update no action */
-    /* ERWIN_RELATION:CHECKSUM="0001013c", PARENT_OWNER="", PARENT_TABLE="payment_cheque"
-      CHILD_OWNER="", CHILD_TABLE="notifications"
-      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_20", FK_COLUMNS="id_sub" */
-    SELECT count(*) INTO NUMROWS
-    FROM payment_cheque
-    WHERE
-        /* %JoinFKPK(:%New,payment_cheque," = "," AND") */
-            :new.id_sub = payment_cheque.id_sub;
-    IF (
-        /* %NotnullFK(:%New," IS NOT NULL AND") */
-                :new.id_sub IS NOT NULL AND
-                NUMROWS = 0
-        )
-    THEN
-        raise_application_error(
-                -20007,
-                'Cannot update notifications because payment_cheque does not exist.'
-            );
-    END IF;
-
-
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER  tD_subs_privileges AFTER DELETE ON subs_privileges for each row
-
-
+    -- erwin Builtin Trigger
+-- DELETE trigger on subs_privileges
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
     /* subs_privileges  subscribers on parent delete set null */
-    /* ERWIN_RELATION:CHECKSUM="0000bcbc", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
+    /* ERWIN_RELATION:CHECKSUM="0000bad7", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
     CHILD_OWNER="", CHILD_TABLE="subscribers"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
     FK_CONSTRAINT="R_18", FK_COLUMNS="privilege" */
@@ -928,17 +1477,17 @@ BEGIN
             subscribers.privilege = :old.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_subs_privileges AFTER UPDATE ON subs_privileges for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on subs_privileges
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* subs_privileges  subscribers on parent update set null */
-    /* ERWIN_RELATION:CHECKSUM="0000db97", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
+    /* ERWIN_RELATION:CHECKSUM="0000db02", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
       CHILD_OWNER="", CHILD_TABLE="subscribers"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
       FK_CONSTRAINT="R_18", FK_COLUMNS="privilege" */
@@ -956,27 +1505,46 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER  tD_subscribers AFTER DELETE ON subscribers for each row
-
-
+    -- erwin Builtin Trigger
+-- DELETE trigger on subscribers
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
+    /* subscribers  intercity_calls on parent delete restrict */
+    /* ERWIN_RELATION:CHECKSUM="0002ed39", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    CHILD_OWNER="", CHILD_TABLE="intercity_calls"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_32", FK_COLUMNS="incoming_id" */
+    SELECT count(*) INTO NUMROWS
+    FROM intercity_calls
+    WHERE
+        /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
+            intercity_calls.incoming_id = :old.id;
+    IF (NUMROWS > 0)
+    THEN
+        raise_application_error(
+                -20001,
+                'Cannot delete subscribers because intercity_calls exists.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
     /* subscribers  payment_cheque on parent delete restrict */
-    /* ERWIN_RELATION:CHECKSUM="0002e70d", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
     CHILD_OWNER="", CHILD_TABLE="payment_cheque"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_19", FK_COLUMNS="id_sub" */
+    FK_CONSTRAINT="R_19", FK_COLUMNS="id" */
     SELECT count(*) INTO NUMROWS
     FROM payment_cheque
     WHERE
         /*  %JoinFKPK(payment_cheque,:%Old," = "," AND") */
-            payment_cheque.id_sub = :old.id;
+            payment_cheque.id = :old.id;
     IF (NUMROWS > 0)
     THEN
         raise_application_error(
@@ -990,31 +1558,12 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
     CHILD_OWNER="", CHILD_TABLE="intercity_calls"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_17", FK_COLUMNS="incoming_call" */
+    FK_CONSTRAINT="R_17", FK_COLUMNS="outgoing_id" */
     SELECT count(*) INTO NUMROWS
     FROM intercity_calls
     WHERE
         /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
-            intercity_calls.incoming_call = :old.id;
-    IF (NUMROWS > 0)
-    THEN
-        raise_application_error(
-                -20001,
-                'Cannot delete subscribers because intercity_calls exists.'
-            );
-    END IF;
-
-    /* erwin Builtin Trigger */
-    /* subscribers  intercity_calls on parent delete restrict */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
-    CHILD_OWNER="", CHILD_TABLE="intercity_calls"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_16", FK_COLUMNS="outgoing_call" */
-    SELECT count(*) INTO NUMROWS
-    FROM intercity_calls
-    WHERE
-        /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
-            intercity_calls.outgoing_call = :old.id;
+            intercity_calls.outgoing_id = :old.id;
     IF (NUMROWS > 0)
     THEN
         raise_application_error(
@@ -1024,18 +1573,78 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tI_subscribers BEFORE INSERT ON subscribers for each row
-
-
+    -- erwin Builtin Trigger
+-- INSERT trigger on subscribers
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
+    /* phone_types  subscribers on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00050ed8", PARENT_OWNER="", PARENT_TABLE="phone_types"
+    CHILD_OWNER="", CHILD_TABLE="subscribers"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_28", FK_COLUMNS="phone_type" */
+    UPDATE subscribers
+    SET
+        /* %SetFK(subscribers,NULL) */
+        subscribers.phone_type = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM phone_types
+                WHERE
+                    /* %JoinFKPK(:%New,phone_types," = "," AND") */
+                        :new.phone_type = phone_types.id
+            )
+        /* %JoinPKPK(subscribers,:%New," = "," AND") */
+      and subscribers.id = :new.id;
+
+    /* erwin Builtin Trigger */
+    /* phone_numbers  subscribers on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+    CHILD_OWNER="", CHILD_TABLE="subscribers"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_24", FK_COLUMNS="phone_num_id" */
+    UPDATE subscribers
+    SET
+        /* %SetFK(subscribers,NULL) */
+        subscribers.phone_num_id = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM phone_numbers
+                WHERE
+                    /* %JoinFKPK(:%New,phone_numbers," = "," AND") */
+                        :new.phone_num_id = phone_numbers.id
+            )
+        /* %JoinPKPK(subscribers,:%New," = "," AND") */
+      and subscribers.id = :new.id;
+
+    /* erwin Builtin Trigger */
+    /* people  subscribers on child insert set null */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="people"
+    CHILD_OWNER="", CHILD_TABLE="subscribers"
+    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+    FK_CONSTRAINT="R_23", FK_COLUMNS="id_person" */
+    UPDATE subscribers
+    SET
+        /* %SetFK(subscribers,NULL) */
+        subscribers.id_person = NULL
+    WHERE
+        NOT EXISTS (
+                SELECT * FROM people
+                WHERE
+                    /* %JoinFKPK(:%New,people," = "," AND") */
+                        :new.id_person = people.id
+            )
+        /* %JoinPKPK(subscribers,:%New," = "," AND") */
+      and subscribers.id = :new.id;
+
+    /* erwin Builtin Trigger */
     /* subs_privileges  subscribers on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="00032684", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subs_privileges"
     CHILD_OWNER="", CHILD_TABLE="subscribers"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
     FK_CONSTRAINT="R_18", FK_COLUMNS="privilege" */
@@ -1049,26 +1658,6 @@ BEGIN
                 WHERE
                     /* %JoinFKPK(:%New,subs_privileges," = "," AND") */
                         :new.privilege = subs_privileges.id
-            )
-        /* %JoinPKPK(subscribers,:%New," = "," AND") */
-      and subscribers.id = :new.id;
-
-    /* erwin Builtin Trigger */
-    /* internal_network  subscribers on child insert set null */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="internal_network"
-    CHILD_OWNER="", CHILD_TABLE="subscribers"
-    P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_14", FK_COLUMNS="phone_number" */
-    UPDATE subscribers
-    SET
-        /* %SetFK(subscribers,NULL) */
-        subscribers.phone_number = NULL
-    WHERE
-        NOT EXISTS (
-                SELECT * FROM internal_network
-                WHERE
-                    /* %JoinFKPK(:%New,internal_network," = "," AND") */
-                        :new.phone_number = internal_network.phone_number
             )
         /* %JoinPKPK(subscribers,:%New," = "," AND") */
       and subscribers.id = :new.id;
@@ -1096,21 +1685,45 @@ BEGIN
       and subscribers.id = :new.id;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_subscribers AFTER UPDATE ON subscribers for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on subscribers
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
+    /* subscribers  intercity_calls on parent update restrict */
+    /* ERWIN_RELATION:CHECKSUM="0008dd80", PARENT_OWNER="", PARENT_TABLE="subscribers"
+      CHILD_OWNER="", CHILD_TABLE="intercity_calls"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_32", FK_COLUMNS="incoming_id" */
+    IF
+        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
+            :old.id <> :new.id
+    THEN
+        SELECT count(*) INTO NUMROWS
+        FROM intercity_calls
+        WHERE
+            /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
+                intercity_calls.incoming_id = :old.id;
+        IF (NUMROWS > 0)
+        THEN
+            raise_application_error(
+                    -20005,
+                    'Cannot update subscribers because intercity_calls exists.'
+                );
+        END IF;
+    END IF;
+
+    /* erwin Builtin Trigger */
     /* subscribers  payment_cheque on parent update restrict */
-    /* ERWIN_RELATION:CHECKSUM="0006ae84", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
       CHILD_OWNER="", CHILD_TABLE="payment_cheque"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_19", FK_COLUMNS="id_sub" */
+      FK_CONSTRAINT="R_19", FK_COLUMNS="id" */
     IF
         /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
             :old.id <> :new.id
@@ -1119,7 +1732,7 @@ BEGIN
         FROM payment_cheque
         WHERE
             /*  %JoinFKPK(payment_cheque,:%Old," = "," AND") */
-                payment_cheque.id_sub = :old.id;
+                payment_cheque.id = :old.id;
         IF (NUMROWS > 0)
         THEN
             raise_application_error(
@@ -1134,7 +1747,7 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
       CHILD_OWNER="", CHILD_TABLE="intercity_calls"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_17", FK_COLUMNS="incoming_call" */
+      FK_CONSTRAINT="R_17", FK_COLUMNS="outgoing_id" */
     IF
         /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
             :old.id <> :new.id
@@ -1143,7 +1756,7 @@ BEGIN
         FROM intercity_calls
         WHERE
             /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
-                intercity_calls.incoming_call = :old.id;
+                intercity_calls.outgoing_id = :old.id;
         IF (NUMROWS > 0)
         THEN
             raise_application_error(
@@ -1154,27 +1767,72 @@ BEGIN
     END IF;
 
     /* erwin Builtin Trigger */
-    /* subscribers  intercity_calls on parent update restrict */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
-      CHILD_OWNER="", CHILD_TABLE="intercity_calls"
+    /* phone_types  subscribers on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_types"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_16", FK_COLUMNS="outgoing_call" */
-    IF
-        /* %JoinPKPK(:%Old,:%New," <> "," OR ") */
-            :old.id <> :new.id
+      FK_CONSTRAINT="R_28", FK_COLUMNS="phone_type" */
+    SELECT count(*) INTO NUMROWS
+    FROM phone_types
+    WHERE
+        /* %JoinFKPK(:%New,phone_types," = "," AND") */
+            :new.phone_type = phone_types.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.phone_type IS NOT NULL AND
+                NUMROWS = 0
+        )
     THEN
-        SELECT count(*) INTO NUMROWS
-        FROM intercity_calls
-        WHERE
-            /*  %JoinFKPK(intercity_calls,:%Old," = "," AND") */
-                intercity_calls.outgoing_call = :old.id;
-        IF (NUMROWS > 0)
-        THEN
-            raise_application_error(
-                    -20005,
-                    'Cannot update subscribers because intercity_calls exists.'
-                );
-        END IF;
+        raise_application_error(
+                -20007,
+                'Cannot update subscribers because phone_types does not exist.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* phone_numbers  subscribers on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="phone_numbers"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_24", FK_COLUMNS="phone_num_id" */
+    SELECT count(*) INTO NUMROWS
+    FROM phone_numbers
+    WHERE
+        /* %JoinFKPK(:%New,phone_numbers," = "," AND") */
+            :new.phone_num_id = phone_numbers.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.phone_num_id IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update subscribers because phone_numbers does not exist.'
+            );
+    END IF;
+
+    /* erwin Builtin Trigger */
+    /* people  subscribers on child update no action */
+    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="people"
+      CHILD_OWNER="", CHILD_TABLE="subscribers"
+      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
+      FK_CONSTRAINT="R_23", FK_COLUMNS="id_person" */
+    SELECT count(*) INTO NUMROWS
+    FROM people
+    WHERE
+        /* %JoinFKPK(:%New,people," = "," AND") */
+            :new.id_person = people.id;
+    IF (
+        /* %NotnullFK(:%New," IS NOT NULL AND") */
+                :new.id_person IS NOT NULL AND
+                NUMROWS = 0
+        )
+    THEN
+        raise_application_error(
+                -20007,
+                'Cannot update subscribers because people does not exist.'
+            );
     END IF;
 
     /* erwin Builtin Trigger */
@@ -1197,29 +1855,6 @@ BEGIN
         raise_application_error(
                 -20007,
                 'Cannot update subscribers because subs_privileges does not exist.'
-            );
-    END IF;
-
-    /* erwin Builtin Trigger */
-    /* internal_network  subscribers on child update no action */
-    /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="internal_network"
-      CHILD_OWNER="", CHILD_TABLE="subscribers"
-      P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_14", FK_COLUMNS="phone_number" */
-    SELECT count(*) INTO NUMROWS
-    FROM internal_network
-    WHERE
-        /* %JoinFKPK(:%New,internal_network," = "," AND") */
-            :new.phone_number = internal_network.phone_number;
-    IF (
-        /* %NotnullFK(:%New," IS NOT NULL AND") */
-                :new.phone_number IS NOT NULL AND
-                NUMROWS = 0
-        )
-    THEN
-        raise_application_error(
-                -20007,
-                'Cannot update subscribers because internal_network does not exist.'
             );
     END IF;
 
@@ -1249,27 +1884,27 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 
 CREATE  TRIGGER tI_intercity_calls BEFORE INSERT ON intercity_calls for each row
-
-
+    -- erwin Builtin Trigger
+-- INSERT trigger on intercity_calls
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
     /* subscribers  intercity_calls on child insert restrict */
-    /* ERWIN_RELATION:CHECKSUM="0002117f", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    /* ERWIN_RELATION:CHECKSUM="00020ba0", PARENT_OWNER="", PARENT_TABLE="subscribers"
     CHILD_OWNER="", CHILD_TABLE="intercity_calls"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_17", FK_COLUMNS="incoming_call" */
+    FK_CONSTRAINT="R_32", FK_COLUMNS="incoming_id" */
     SELECT count(*) INTO NUMROWS
     FROM subscribers
     WHERE
         /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.incoming_call = subscribers.id;
+            :new.incoming_id = subscribers.id;
     IF (
         /* %NotnullFK(:%New," IS NOT NULL AND") */
 
@@ -1287,12 +1922,12 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
     CHILD_OWNER="", CHILD_TABLE="intercity_calls"
     P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-    FK_CONSTRAINT="R_16", FK_COLUMNS="outgoing_call" */
+    FK_CONSTRAINT="R_17", FK_COLUMNS="outgoing_id" */
     SELECT count(*) INTO NUMROWS
     FROM subscribers
     WHERE
         /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.outgoing_call = subscribers.id;
+            :new.outgoing_id = subscribers.id;
     IF (
         /* %NotnullFK(:%New," IS NOT NULL AND") */
 
@@ -1306,26 +1941,26 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /
 
 CREATE  TRIGGER tU_intercity_calls AFTER UPDATE ON intercity_calls for each row
-
-
+    -- erwin Builtin Trigger
+-- UPDATE trigger on intercity_calls
 DECLARE NUMROWS INTEGER;
 BEGIN
     /* erwin Builtin Trigger */
     /* subscribers  intercity_calls on child update restrict */
-    /* ERWIN_RELATION:CHECKSUM="000212c5", PARENT_OWNER="", PARENT_TABLE="subscribers"
+    /* ERWIN_RELATION:CHECKSUM="00020e52", PARENT_OWNER="", PARENT_TABLE="subscribers"
       CHILD_OWNER="", CHILD_TABLE="intercity_calls"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_17", FK_COLUMNS="incoming_call" */
+      FK_CONSTRAINT="R_32", FK_COLUMNS="incoming_id" */
     SELECT count(*) INTO NUMROWS
     FROM subscribers
     WHERE
         /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.incoming_call = subscribers.id;
+            :new.incoming_id = subscribers.id;
     IF (
         /* %NotnullFK(:%New," IS NOT NULL AND") */
 
@@ -1343,12 +1978,12 @@ BEGIN
     /* ERWIN_RELATION:CHECKSUM="00000000", PARENT_OWNER="", PARENT_TABLE="subscribers"
       CHILD_OWNER="", CHILD_TABLE="intercity_calls"
       P2C_VERB_PHRASE="", C2P_VERB_PHRASE="",
-      FK_CONSTRAINT="R_16", FK_COLUMNS="outgoing_call" */
+      FK_CONSTRAINT="R_17", FK_COLUMNS="outgoing_id" */
     SELECT count(*) INTO NUMROWS
     FROM subscribers
     WHERE
         /* %JoinFKPK(:%New,subscribers," = "," AND") */
-            :new.outgoing_call = subscribers.id;
+            :new.outgoing_id = subscribers.id;
     IF (
         /* %NotnullFK(:%New," IS NOT NULL AND") */
 
@@ -1362,6 +1997,6 @@ BEGIN
     END IF;
 
 
-
+-- erwin Builtin Trigger
 END;
 /

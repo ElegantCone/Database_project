@@ -1,7 +1,8 @@
-
 DROP TABLE connection_requests CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE intercity_calls CASCADE CONSTRAINTS PURGE;
+
+DROP TABLE internal_network CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE payphones CASCADE CONSTRAINTS PURGE;
 
@@ -11,14 +12,33 @@ DROP TABLE payment_cheque CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE subscribers CASCADE CONSTRAINTS PURGE;
 
+DROP TABLE phone_numbers CASCADE CONSTRAINTS PURGE;
+
+DROP TABLE phone_types CASCADE CONSTRAINTS PURGE;
+
+DROP TABLE people CASCADE CONSTRAINTS PURGE;
+
 DROP TABLE subs_privileges CASCADE CONSTRAINTS PURGE;
 
-DROP TABLE internal_network CASCADE CONSTRAINTS PURGE;
-
 DROP TABLE ate CASCADE CONSTRAINTS PURGE;
+
+DROP TABLE districts CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE ate_types CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE ate_attrs CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE ctn CASCADE CONSTRAINTS PURGE;
+
+drop sequence ate_seq;
+drop sequence ate_attrs_seq;
+drop sequence ate_types_seq;
+drop sequence connection_requests_seq;
+drop sequence ctn_seq;
+drop sequence districts_seq;
+drop sequence payphones_seq;
+drop sequence people_seq;
+drop sequence phone_numbers_seq;
+drop sequence phone_types_seq;
+drop sequence subs_privileges_seq;
+drop sequence subscribers_seq;

@@ -29,7 +29,7 @@ public class SQLController {
 
     public void createTableTest() throws IOException, NullPointerException {
         parseSQL("testTableCreate", ";");
-        parseSQL("testCreateTriggers", "END;/");
+        //parseSQL("testCreateTriggers", "END;/");
         if (errLabel.getText().equals("")) errLabel.setText("Таблицы созданы");
     }
 
@@ -45,13 +45,17 @@ public class SQLController {
         StringBuilder sql = new StringBuilder();
 
         while ((sqlPart = reader.readLine()) != null){
-            if (sqlPart.contains(del)){
+            if (sqlPart.contains(del) || sqlPart.equals("/")){
                 sql.append(sqlPart);
-                sql.delete(sql.length()-1, sql.length());
+                if (!sqlPart.equals("/")) sql.delete(sql.length()-1, sql.length());
+                String ssql = sql.toString();
                 execute(sql.toString());
                 sql = new StringBuilder();
             }
-            else sql.append(sqlPart);
+            else {
+                sql.append(sqlPart);
+                sql.append("\n");
+            }
         }
     }
 
@@ -159,5 +163,13 @@ public class SQLController {
 
         statement = conn.prepareStatement(sql.toString());
         statement.executeQuery();
+    }
+
+    public void update(String tableName, String colName, String data, Integer id) throws SQLException {
+        String sql = "UPDATE " + tableName + " SET " + colName + " = ? WHERE id = ?";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        preparedStatement.setString(1, data);
+        preparedStatement.setString(2, String.valueOf(id));
+        preparedStatement.execute();
     }
 }
