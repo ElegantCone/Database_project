@@ -1,25 +1,37 @@
 insert into ctn (id, city) values (0, 'Новосибирск');
 insert into ctn (id, city) values (1, 'Омск');
+
 insert into DISTRICTS (id, district_name, CTN_ID) values (0, 'Ленинский', 0);
 insert into DISTRICTS (id, district_name, CTN_ID) values (1, 'Октябрьский', 0);
 insert into DISTRICTS (id, district_name, CTN_ID) values (2, 'Ленинский', 1);
 insert into DISTRICTS (id, district_name, CTN_ID) values (3, 'Кировский', 1);
+
 insert into ate_attrs (id, attribute) values (0, 'Низкое качество связи');
 insert into ate_attrs (id, attribute) values (1, 'Высокое качество связи');
-insert into ate_types (id, ate_type, attribute) values (0, 'Городская', 0);
-insert into ate_types (id, ate_type, attribute) values (1, 'Ведомственная', 1);
+
+insert into ate_types (id, attribute_id, ate_type) values (0, 0, 'Городская');
+insert into ate_types (id, attribute_id, ate_type) values (1, 1, 'Ведомственная');
+
 insert into subs_privileges (id, privilege, reduction) values (0, 'Без льгот', 1.0);
 insert into subs_privileges (id, privilege, reduction) values (1, 'Льгота', 0.5);
-insert into ate (id, id_ctn, lines_count, numbers_count, cable_count, ate_type, DISTRICT_ID) values (0, 0, 2, 10, 2, 0, 0);
-insert into ate (id, id_ctn, lines_count, numbers_count, cable_count, ate_type, DISTRICT_ID) values (1, 1, 2, 20, 2, 0, 2);
+
+insert into ate (id, id_ctn, lines_count, numbers_count, cable_count, ate_type_id, DISTRICT_ID) values (0, 0, 2, 10, 2, 0, 0);
+insert into ate (id, id_ctn, lines_count, numbers_count, cable_count, ate_type_id, DISTRICT_ID) values (1, 1, 2, 20, 2, 0, 2);
+
 insert into phone_types (id, type) values (0, 'Основной');
 insert into phone_types (id, type) values (1, 'Параллельный');
 insert into phone_types (id, type) values (2, 'Спаренный');
-insert into phone_numbers (id, phone_number, type) values (0, 2137320, 0);
-insert into phone_numbers (id, phone_number, type) values (1, 2797870, 0);
-insert into internal_network (id, network_number, id_ate, id_ctn) values (0, 314, 0, 0);
-insert into internal_network (id, network_number, id_ate, id_ctn) values (1, 315, 0, 0);
-insert into people (id, surname, name, patronymic, sex, street, house_number, apartment_number) values (0, 'Иванов', 'Иван', 'Иванович', 'Муж', 'Полевая', 39, 12);
-insert into people (id, surname, name, patronymic, sex, street, house_number, apartment_number) values (1, 'Петров', 'Петр', 'Петрович', 'Муж', 'Иванова', 12, 39);
-insert into subscribers (id, intercity_calls, payment, id_ate, id_ctn, privilege, id_person, phone_num_id, phone_type, BALANCE) values (0, 0, 180, 0, 0, 0, 0, 0, 0, 100);
-insert into subscribers (id, intercity_calls, payment, id_ate, id_ctn, privilege, id_person, phone_num_id, phone_type, BALANCE) values (1, 1, 200, 0, 0, 0, 1, 1, 0, 200);
+
+insert into phone_numbers (id, phone_number, type_id) values (0, 2137320, 0);
+insert into phone_numbers (id, phone_number, type_id) values (1, 2797870, 0);
+
+insert into internal_network (id, id_phone, network_number, id_ate) values (0, 0, 314, 0);
+insert into internal_network (id, id_phone, network_number, id_ate) values (1, 1, 315, 0);
+
+insert into people (id, surname, name, patronymic, sex, street, house_number, apartment_number, district_id) values (0, 'Иванов', 'Иван', 'Иванович', 'Муж', 'Полевая', 39, 12, 0);
+insert into people (id, surname, name, patronymic, sex, street, house_number, apartment_number, district_id) values (1, 'Петров', 'Петр', 'Петрович', 'Муж', 'Иванова', 12, 39, 1);
+
+insert into subscribers (id, intercity_calls, payment, id_ate, privilege, id_person, phone_num_id, phone_type_id, BALANCE) values (0, 0, 180, 0, 0, 0, 0, 0, 100);
+insert into subscribers (id, intercity_calls, payment, id_ate, privilege, id_person, phone_num_id, phone_type_id, BALANCE) values (1, 1, 200, 0, 0, 1, 1, 0, 200);
+
+

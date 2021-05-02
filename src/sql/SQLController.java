@@ -102,7 +102,7 @@ public class SQLController {
             sql.append(",");
         }
         sql.delete(sql.length()-1, sql.length());
-        sql.append(" from " + tableName);
+        sql.append(" from ").append(tableName);
         return sql.toString();
     }
 
@@ -172,4 +172,13 @@ public class SQLController {
         preparedStatement.setString(2, String.valueOf(id));
         preparedStatement.execute();
     }
+
+    public void delete (String tableName, Integer id) throws SQLException {
+        String sql = "DELETE FROM " + tableName + " WHERE id = ?";
+        PreparedStatement preparedStatement = conn.prepareStatement(sql);
+        preparedStatement.setString(1, String.valueOf(id));
+        preparedStatement.execute();
+    }
+
+
 }

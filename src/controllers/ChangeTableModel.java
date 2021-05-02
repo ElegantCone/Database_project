@@ -9,6 +9,7 @@ import java.util.Vector;
 
 public class ChangeTableModel extends DefaultTableModel {
     Map<int[], Object> changes = new HashMap<>();
+    Vector<String> delRow = new Vector<>();
 
     ChangeTableModel(Vector<Vector<Object>> data, Vector<String> colNames){
         super(data, colNames);

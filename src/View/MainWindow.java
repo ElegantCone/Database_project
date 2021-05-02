@@ -1,5 +1,6 @@
 package View;
 
+import controllers.ChangeTableController;
 import sql.SQLController;
 
 import javax.swing.*;
@@ -17,7 +18,7 @@ public class MainWindow extends JFrame {
     private Connection conn;
     private JFrame window;
     private SQLController sqlController;
-    private JPanel contents = new JPanel(new FlowLayout());
+    private Container contents = new Container();
     private Vector <JButton> tblBtns = new Vector<>();
     private String[] tblNamesRu = new String[]
             {"ГТС", "АТС", "Типы АТС", "Атрибуты АТС", "Таксофоны", "Запросы на подключение", "Люди", "Абоненты",
@@ -26,11 +27,15 @@ public class MainWindow extends JFrame {
             {"ctn", "ate", "ate_types", "ate_attrs", "payphones", "connection_requests", "people", "subscribers",
                     "intercity_calls", "phone_numbers", "internal_network", "phone_types", "payment_cheque", "notifications", "subs_privileges"};
 
-    public MainWindow(Connection conn) throws SQLException {
+    public MainWindow(Connection conn) {
         this.conn = conn;
-        window = new JFrame();
+        setNewWindow();
         initWindow();
         sqlController = new SQLController(conn);
+    }
+
+    private void setNewWindow() {
+        window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.addWindowListener(connClose());
         window.setBounds(250, 50, 800, 600);
@@ -53,69 +58,41 @@ public class MainWindow extends JFrame {
     }
 
     private void initWindow(){
-        window.getContentPane().remove(contents);
-        contents = new JPanel(new FlowLayout());
+        setNewWindow();
+        contents = new JPanel(new BorderLayout());
+
+        JPanel centerBtns = new JPanel(new FlowLayout());
 
         JButton changeTables = new JButton("Создать/удалить таблицы");
         JButton showTable = new JButton("Вывести таблицы");
-        JButton setData = new JButton("Ввести данные в таблицы");
-        JButton updateData = new JButton("Изменить данные");
         JButton closeApp = new JButton("Закрыть приложение");
 
-        changeTables.setPreferredSize(new Dimension(200, 30));
-        showTable.setPreferredSize(new Dimension(200, 30));
-        setData.setPreferredSize(new Dimension(200, 30));
-        updateData.setPreferredSize(new Dimension(200, 30));
-        closeApp.setPreferredSize(new Dimension(200, 30));
-        changeTables.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    ChangeTableDialog changeDialog = new ChangeTableDialog("Изменение таблиц", conn);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
+        changeTables.setPreferredSize(new Dimension(600, 50));
+        showTable.setPreferredSize(new Dimension(600, 50));
+        closeApp.setPreferredSize(new Dimension(600, 50));
 
-        showTable.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        changeTables.addActionListener(e -> changeToChange());
+        showTable.addActionListener(e -> {
+            try {
                 changeToShow();
+            } catch (SQLException ex) {
+                ex.getLocalizedMessage();
+            }
+        });
+        closeApp.addActionListener(e -> {
+            window.dispose();
+            try {
+                conn.close();
+                System.exit(0);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
         });
 
-        setData.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                changeToSetData();
-            }
-        });
-
-        updateData.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                changeToUpdateData();
-            }
-        });
-
-        closeApp.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                window.dispose();
-                try {
-                    conn.close();
-                    System.exit(0);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        });
-        contents.add(showTable);
-        contents.add(changeTables);
-        contents.add(setData);
-        contents.add(updateData);
-        contents.add(closeApp);
+        centerBtns.add(showTable);
+        centerBtns.add(changeTables);
+        contents.add(centerBtns);
+        contents.add(closeApp, BorderLayout.SOUTH);
 
         window.getContentPane().add(contents);
         window.invalidate();
@@ -123,8 +100,10 @@ public class MainWindow extends JFrame {
         window.repaint();
     }
 
-    public void changeToShow(){
-        initWindowWithButtons("show");
+    public void changeToShow() throws SQLException {
+        //initWindowWithButtons("show");
+        TableViewWindow tw = new TableViewWindow();
+        tw.createGUI(sqlController, window, initBckBtn(), conn);
     }
 
     public void changeToSetData(){
@@ -134,6 +113,8 @@ public class MainWindow extends JFrame {
     public void changeToUpdateData() {
         initWindowWithButtons("update");
     }
+
+    public void changeToChange() { initWindowWithButtons("change");}
 
     private void partsInit(Box box, JLabel mainLbl, JButton setDataSubs, JButton setDataATE,JButton setDataCTN, JButton backBtn) {
         box.add(mainLbl);
@@ -152,46 +133,15 @@ public class MainWindow extends JFrame {
     private void initTblBtns (JPanel contents, String type) {
         for (int i = 0; i < tblNamesEng.length; i++){
             JButton btn = new JButton(tblNamesRu[i]);
-            int k = i;
-            btn.setSize(new Dimension(300, 40));
-            switch(type) {
-                case "show":
-                    btn.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                               ShowTableDialog dialog = new ShowTableDialog(tblNamesEng[k], sqlController);
-                             } catch (SQLException ex) {
-                              ex.printStackTrace();
-                            }
-                         }
-                    });
-                    break;
-                case "insert":
-                    btn.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                SetDataDialog dialog = new SetDataDialog(tblNamesEng[k], sqlController);
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-                    break;
-                case "update":
-                    btn.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            try {
-                                UpdateDataDialog dialog = new UpdateDataDialog(tblNamesEng[k], sqlController);
-                            } catch (SQLException ex) {
-                                ex.printStackTrace();
-                            }
-                        }
-                    });
-                    break;
-            }
+            btn.setSize(new Dimension(600, 50));
+            btn.addActionListener(e -> {
+                TableViewWindow tw = new TableViewWindow();
+                try {
+                    tw.createGUI(sqlController, window, initBckBtn(), conn);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            });
             tblBtns.add(btn);
             contents.add(btn);
         }
@@ -199,12 +149,10 @@ public class MainWindow extends JFrame {
 
     private JButton initBckBtn() {
         JButton backBtn = new JButton("Вернуться назад");
-        backBtn.setPreferredSize(new Dimension(700, 30));
-        backBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                initWindow();
-            }
+        backBtn.setPreferredSize(new Dimension(700, 50));
+        backBtn.addActionListener(e -> {
+            window.dispose();
+            initWindow();
         });
         return backBtn;
     }
@@ -212,7 +160,7 @@ public class MainWindow extends JFrame {
     private JLabel initMainLbl() {
         JLabel mainLbl = new JLabel("Выберите таблицу");
         mainLbl.setHorizontalAlignment(SwingConstants.CENTER);
-        mainLbl.setPreferredSize(new Dimension(400, 40));
+        mainLbl.setPreferredSize(new Dimension(600, 50));
 
         return mainLbl;
     }
@@ -223,9 +171,11 @@ public class MainWindow extends JFrame {
         JPanel centerBtns = new JPanel(new FlowLayout());
 
         contents.setSize(600, 200);
-        
-        initTblBtns(centerBtns, type);
-        contents.add(initMainLbl(), BorderLayout.NORTH);
+        if (type.equals("change")) initChangeBtns(centerBtns);
+        else {
+            initTblBtns(centerBtns, type);
+            contents.add(initMainLbl(), BorderLayout.NORTH);
+        }
         contents.add(centerBtns, BorderLayout.CENTER);
         contents.add(initBckBtn(), BorderLayout.SOUTH);
         
@@ -233,6 +183,30 @@ public class MainWindow extends JFrame {
         window.invalidate();
         window.validate();
         window.repaint();
+    }
+
+    private void initChangeBtns(JPanel centerBtns) {
+        JButton createTable = new JButton("Создать таблицы");
+        JButton dropTable = new JButton("Удалить таблицы");
+        JButton fillTable = new JButton("Заполнить тестовыми данными");
+        JLabel errorLbl = new JLabel("");
+
+        createTable.setPreferredSize(new Dimension(600, 50));
+        dropTable.setPreferredSize(new Dimension(600, 50));
+        fillTable.setPreferredSize(new Dimension(600, 50));
+        errorLbl.setPreferredSize(new Dimension(600, 50));
+
+        ChangeTableController controller = new ChangeTableController(new SQLController(conn), errorLbl);
+
+        fillTable.addActionListener(controller.fillTableListener());
+        createTable.addActionListener(controller.createTableListener());
+        dropTable.addActionListener(controller.dropTableListener());
+
+        centerBtns.add(createTable);
+        centerBtns.add(dropTable);
+        centerBtns.add(fillTable);
+        centerBtns.add(errorLbl);
+
     }
 
 }

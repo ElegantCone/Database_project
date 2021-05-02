@@ -46,6 +46,10 @@ public class DefaultController {
         controller.update(tableName, colName, data, Integer.parseInt(id));
     }
 
+    public void prepareDataToDelete(String tableName, Integer id) throws SQLException {
+        controller.delete(tableName, id);
+    }
+
     public Vector<String> getDataFromFields(Vector<JTextField> fields){
         Vector<String> data = new Vector<>();
         for (JTextField field : fields){

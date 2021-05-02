@@ -1,16 +1,11 @@
 package View;
 
-import controllers.ChangeTableController;
 import controllers.ShowTableController;
-import jdk.nashorn.internal.scripts.JD;
 import sql.SQLController;
-
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 import java.awt.*;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class ShowTableDialog extends JDialog {
@@ -29,15 +24,15 @@ public class ShowTableDialog extends JDialog {
         table.setGridColor(Color.BLACK);
 
         JScrollPane scrollPane = new JScrollPane();
-        int x = table.getColumnCount()*50;
-        int y = 10*30; //10 rows on screen
+        int x = table.getColumnCount() * 100;
+        int y = 10 * 30; //10 rows on screen
         scrollPane.setSize(new Dimension(x, y));
         scrollPane.createVerticalScrollBar();
         scrollPane.createHorizontalScrollBar();
         window = new JDialog(this, tit, true);
         if (x < table.getPreferredSize().width) x = table.getPreferredSize().width;
         table.setSize(new Dimension(x, y));
-        window.setBounds(100, 200, x, y);
+        window.setBounds(200, 200, x, y);
 
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setViewportView(table);

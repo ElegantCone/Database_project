@@ -5,22 +5,21 @@ CREATE TABLE ate
     numbers_count        INTEGER NOT NULL ,
     cable_count          INTEGER NOT NULL ,
     id_ctn               INTEGER NOT NULL ,
-    ate_type             INTEGER NOT NULL ,
-    district_id          INTEGER NOT NULL
+    district_id          INTEGER NOT NULL ,
+    ate_type_id          INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKate ON ate
-    (id   ASC,id_ctn   ASC);
+    (id   ASC);
 
 ALTER TABLE ate
-    ADD CONSTRAINT  XPKate PRIMARY KEY (id,id_ctn);
+    ADD CONSTRAINT  XPKate PRIMARY KEY (id);
 
 CREATE TABLE payphones
 (
     id                   INTEGER NOT NULL ,
     address              LONG VARCHAR NOT NULL ,
-    id_ate               INTEGER NOT NULL ,
-    id_ctn               INTEGER NOT NULL
+    id_ate               INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKpayphones ON payphones
@@ -44,8 +43,8 @@ ALTER TABLE ate_attrs
 CREATE TABLE ate_types
 (
     id                   INTEGER NOT NULL ,
-    ate_type             VARCHAR2(255) NOT NULL ,
-    attribute            INTEGER NOT NULL
+    ate_type             VARCHAR(255) NOT NULL ,
+    attribute_id         INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKate_types ON ate_types
@@ -70,7 +69,7 @@ CREATE TABLE districts
 (
     id                   INTEGER NOT NULL ,
     district_name        VARCHAR2(255) NOT NULL ,
-    ctn_id               INTEGER NULL
+    ctn_id               INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKdistricts ON districts
@@ -82,6 +81,7 @@ ALTER TABLE districts
 CREATE TABLE payment_cheque
 (
     payment_date         DATE NOT NULL ,
+    id_sub               INTEGER NOT NULL ,
     id                   INTEGER NOT NULL
 );
 
@@ -93,8 +93,9 @@ ALTER TABLE payment_cheque
 
 CREATE TABLE notifications
 (
-    id                   INTEGER NOT NULL ,
-    notification_date    DATE NOT NULL
+    notification_date    DATE NOT NULL ,
+    id_cheque            INTEGER NOT NULL ,
+    id                   INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKnotifications ON notifications
@@ -112,7 +113,8 @@ CREATE TABLE people
     sex                  VARCHAR2(20) NOT NULL ,
     street               VARCHAR2(255) NOT NULL ,
     house_number         INTEGER NOT NULL ,
-    apartment_number     INTEGER NOT NULL
+    apartment_number     INTEGER NOT NULL ,
+    district_id          INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKpeople ON people
@@ -125,7 +127,6 @@ CREATE TABLE connection_requests
 (
     id                   INTEGER NOT NULL ,
     id_ate               INTEGER NOT NULL ,
-    id_ctn               INTEGER NOT NULL ,
     id_person            INTEGER NOT NULL
 );
 
@@ -139,7 +140,7 @@ CREATE TABLE phone_numbers
 (
     id                   INTEGER NOT NULL ,
     phone_number         INTEGER NOT NULL ,
-    type                 INTEGER NOT NULL
+    type_id              INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKphone_numbers ON phone_numbers
@@ -150,10 +151,10 @@ ALTER TABLE phone_numbers
 
 CREATE TABLE internal_network
 (
-    id                   INTEGER NOT NULL ,
+    id_phone             INTEGER NOT NULL ,
     network_number       INTEGER NOT NULL ,
     id_ate               INTEGER NOT NULL ,
-    id_ctn               INTEGER NOT NULL
+    id                   INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKinternal_network ON internal_network
@@ -192,12 +193,11 @@ CREATE TABLE subscribers
     intercity_calls      SMALLINT NOT NULL ,
     payment              INTEGER NOT NULL ,
     id_ate               INTEGER NOT NULL ,
-    id_ctn               INTEGER NOT NULL ,
     privilege            INTEGER NOT NULL ,
     id                   INTEGER NOT NULL ,
     id_person            INTEGER NOT NULL ,
     phone_num_id         INTEGER NOT NULL ,
-    phone_type           INTEGER NOT NULL ,
+    phone_type_id        INTEGER NOT NULL ,
     balance              INTEGER NOT NULL
 );
 
@@ -211,56 +211,57 @@ CREATE TABLE intercity_calls
 (
     call_time            INTEGER NULL ,
     outgoing_id          INTEGER NOT NULL ,
+    id                   INTEGER NOT NULL ,
     incoming_id          INTEGER NOT NULL
 );
 
 CREATE UNIQUE INDEX XPKintercity_calls ON intercity_calls
-    (outgoing_id   ASC,incoming_id   ASC);
+    (id   ASC);
 
 ALTER TABLE intercity_calls
-    ADD CONSTRAINT  XPKintercity_calls PRIMARY KEY (outgoing_id,incoming_id);
+    ADD CONSTRAINT  XPKintercity_calls PRIMARY KEY (id);
 
 ALTER TABLE ate
     ADD (CONSTRAINT R_5 FOREIGN KEY (id_ctn) REFERENCES ctn (id));
 
 ALTER TABLE ate
-    ADD (CONSTRAINT R_11 FOREIGN KEY (ate_type) REFERENCES ate_types (id) ON DELETE SET NULL);
-
-ALTER TABLE ate
     ADD (CONSTRAINT R_33 FOREIGN KEY (district_id) REFERENCES districts (id) ON DELETE SET NULL);
 
+ALTER TABLE ate
+    ADD (CONSTRAINT R_43 FOREIGN KEY (ate_type_id) REFERENCES ate_types (id) ON DELETE SET NULL);
+
 ALTER TABLE payphones
-    ADD (CONSTRAINT R_8 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_8 FOREIGN KEY (id_ate) REFERENCES ate (id) ON DELETE SET NULL);
 
 ALTER TABLE ate_types
-    ADD (CONSTRAINT R_12 FOREIGN KEY (attribute) REFERENCES ate_attrs (id) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_39 FOREIGN KEY (attribute_id) REFERENCES ate_attrs (id) ON DELETE SET NULL);
 
 ALTER TABLE districts
     ADD (CONSTRAINT R_34 FOREIGN KEY (ctn_id) REFERENCES ctn (id) ON DELETE SET NULL);
 
 ALTER TABLE payment_cheque
-    ADD (CONSTRAINT R_19 FOREIGN KEY (id) REFERENCES subscribers (id));
+    ADD (CONSTRAINT R_19 FOREIGN KEY (id_sub) REFERENCES subscribers (id));
 
 ALTER TABLE notifications
-    ADD (CONSTRAINT R_20 FOREIGN KEY (id) REFERENCES payment_cheque (id) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_20 FOREIGN KEY (id_cheque) REFERENCES payment_cheque (id) ON DELETE SET NULL);
 
-ALTER TABLE connection_requests
-    ADD (CONSTRAINT R_7 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+ALTER TABLE people
+    ADD (CONSTRAINT R_36 FOREIGN KEY (district_id) REFERENCES districts (id) ON DELETE SET NULL);
 
 ALTER TABLE connection_requests
     ADD (CONSTRAINT R_16 FOREIGN KEY (id_person) REFERENCES people (id) ON DELETE SET NULL);
 
+ALTER TABLE connection_requests
+    ADD (CONSTRAINT R_7 FOREIGN KEY (id_ate) REFERENCES ate (id) ON DELETE SET NULL);
+
 ALTER TABLE phone_numbers
-    ADD (CONSTRAINT R_31 FOREIGN KEY (type) REFERENCES phone_types (id) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_31 FOREIGN KEY (type_id) REFERENCES phone_types (id) ON DELETE SET NULL);
 
 ALTER TABLE internal_network
-    ADD (CONSTRAINT R_15 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_26 FOREIGN KEY (id_phone) REFERENCES phone_numbers (id));
 
 ALTER TABLE internal_network
-    ADD (CONSTRAINT R_26 FOREIGN KEY (id) REFERENCES phone_numbers (id));
-
-ALTER TABLE subscribers
-    ADD (CONSTRAINT R_13 FOREIGN KEY (id_ate, id_ctn) REFERENCES ate (id, id_ctn) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_15 FOREIGN KEY (id_ate) REFERENCES ate (id) ON DELETE SET NULL);
 
 ALTER TABLE subscribers
     ADD (CONSTRAINT R_18 FOREIGN KEY (privilege) REFERENCES subs_privileges (id) ON DELETE SET NULL);
@@ -272,7 +273,10 @@ ALTER TABLE subscribers
     ADD (CONSTRAINT R_24 FOREIGN KEY (phone_num_id) REFERENCES phone_numbers (id) ON DELETE SET NULL);
 
 ALTER TABLE subscribers
-    ADD (CONSTRAINT R_28 FOREIGN KEY (phone_type) REFERENCES phone_types (id) ON DELETE SET NULL);
+    ADD (CONSTRAINT R_28 FOREIGN KEY (phone_type_id) REFERENCES phone_types (id) ON DELETE SET NULL);
+
+ALTER TABLE subscribers
+    ADD (CONSTRAINT R_13 FOREIGN KEY (id_ate) REFERENCES ate (id) ON DELETE SET NULL);
 
 ALTER TABLE intercity_calls
     ADD (CONSTRAINT R_17 FOREIGN KEY (outgoing_id) REFERENCES subscribers (id));
